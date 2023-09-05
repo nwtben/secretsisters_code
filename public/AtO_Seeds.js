@@ -463,6 +463,15 @@ $(document).ready(function () {
         var newTooltipTriggerList = document.querySelectorAll('.col .input-group [data-bs-toggle="tooltip"]');
         var newTooltipList = [...newTooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
         $("#summary-tbody").html("");
+        // set var made to test saving something..
+        let totalMaxCurroptorScore = 0;
+        let totalCurroptorScore = 0;
+        let potentialMaxCurroptor = [];
+        let potentialCurroptor = [];
+         // list of zones we must include in total
+        const baseZoneList = ["senenthia", "voidlow", "voidhigh"];
+        // list of zones that might not be included in total
+        const extraZoneList = ["aquarfall", "velkarath", "faeborg", "ulminin"];
         zoneList.forEach(function (zone) {
             // this is messy af and v. overkill (so many variables!) but the witching hour has come and I miss painkillers. will revisit when I do score estimates.
             var iOptimalEvents = (typeof optimalEvents[zone] === "undefined") ? 0 : optimalEvents[zone];
@@ -479,6 +488,25 @@ $(document).ready(function () {
             var iTotalCombats = iDoneCombats + iCombatMissing;
             var iCorruptorScore = iCombatCommon * 40 + iCombatUncommon * 80 + iCombatRare * 130 + iCombatEpic * 200;
             var iMaxCorruptorScore = iTotalCombats * 200;
+            // const baseZoneList = ["senenthia", "aquarfall", "voidlow", "voidhigh"];
+            // const zoneList = ["senenthia", "aquarfall", "velkarath", "faeborg", "ulminin", "voidlow", "voidhigh"];
+            if (baseZoneList.includes(zone)){
+                totalMaxCurroptorScore += iMaxCorruptorScore;
+                totalCurroptorScore += iCorruptorScore;
+            } else if (extraZoneList.includes(zone)){
+                // add to list
+                potentialMaxCurroptor.push(iMaxCorruptorScore);
+                potentialCurroptor.push(iCorruptorScore);
+                // check if it's more than 3 zones
+                if (potentialMaxCurroptor.length > 3){
+                    // remove the lowest value
+                    potentialMaxCurroptor.splice(potentialMaxCurroptor.indexOf(Math.min(...potentialMaxCurroptor)), 1);
+                    potentialCurroptor.splice(potentialCurroptor.indexOf(Math.min(...potentialCurroptor)), 1);
+                } 
+            } else {
+                console.log('bug hunting....'); // ??? lol bug hunting, maybe not es15 compliant?
+            }
+
             var newHTML = iTotalEvents == 0 ? "" : `<span class="text-` + (iOptimalEvents == iTotalEvents ? `success` : `danger`) + `">` + iOptimalEvents + `/` + iTotalEvents + ` events</span>, `;
             newHTML += `<span class="text-` + (iCombatMissing == 0 ? `success` : `danger`) + `">` + iDoneCombats + `/` + iTotalCombats + ` corruptors</span> (<span class="meds-text-epic">` + iCombatEpic + ` Extreme</span>, <span class="text-primary">` + iCombatRare + ` Hard</span>, <span class="text-success">` + iCombatUncommon + ` Average</span>, <span class="text-secondary">` + iCombatCommon + ` Easy</span>)`;
             $('[data-bs-target="#accordion-' + zone + '"] div span.ms-auto.me-2').html(newHTML);
@@ -494,6 +522,31 @@ $(document).ready(function () {
 </tr>`;
             $("#summary-tbody").append(newHTML);
         });
+        // add code to generate new Total column:
+        // first, add up all the potential max corruptor scores
+        var potentialMaxCurroptorSum = potentialMaxCurroptor.reduce((a, b) => a + b, 0);
+        var potentialCurroptorSum =potentialCurroptor.reduce((a, b) => a + b, 0); 
+        // then add the base zones  
+        var actualTotalMaxCurroptorScore = totalMaxCurroptorScore + potentialMaxCurroptorSum;
+        var actualTotalCurroptorScore = totalCurroptorScore + potentialCurroptorSum;
+        var extrHTML = `
+            <tr>
+                <th scope="row" class="fw-7">
+                    Total:
+                </th>
+                <td class="fw-5"></td>
+                <td class="fw-5"></td>
+                <td class="fw-5"></td>
+                <td class="fw-5"></td>
+                <td class="fw-5"></td>
+                <td class="fw-5"></td>
+                <td class="fw-5"></td>
+                <td class="fw-5">${actualTotalCurroptorScore}/${potentialMaxCurroptorSum}</td>
+            </tr>
+        `;
+        $("#summary-tbody").append(extrHTML);
+        // end of new code  
+
         $(".accordion.visually-hidden").removeClass("visually-hidden");
 
     });
