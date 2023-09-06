@@ -497,12 +497,13 @@ $(document).ready(function () {
                 // add to list
                 potentialMaxCurroptor.push(iMaxCorruptorScore);
                 potentialCurroptor.push(iCorruptorScore);
-                // check if it's more than 3 zones
-                if (potentialMaxCurroptor.length > 3){
-                    // remove the lowest value
-                    potentialMaxCurroptor.splice(potentialMaxCurroptor.indexOf(Math.min(...potentialMaxCurroptor)), 1);
-                    potentialCurroptor.splice(potentialCurroptor.indexOf(Math.min(...potentialCurroptor)), 1);
-                } 
+                // check if it's more than 2 zones
+                if (potentialMaxCurroptor.length > 2){
+                    // get index of lowest value
+                    var lowestIndex = potentialCurroptor.indexOf(Math.min(...potentialCurroptor));
+                    potentialCurroptor.splice(lowestIndex, 1);
+                    potentialMaxCurroptor.splice(lowestIndex, 1);
+                }
             } else {
                 console.log('bug hunting....'); // ??? lol bug hunting, maybe not es15 compliant?
             }
